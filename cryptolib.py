@@ -65,6 +65,10 @@ ENGLISH_FREQUENCIES_WITH_SPACE = {
     ' ': 0.1918182
 }
 
+def pkcs_7_pad(key, length):
+    pad_length = length - len(key)
+    return ''.join(list(key) + ([chr(pad_length)] * pad_length))
+
 def aes_decrypt(key, ciphertext, mode=AES.MODE_ECB, iv=None):
     kwargs = {
         "mode": mode
