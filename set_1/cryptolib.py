@@ -3,6 +3,8 @@ import itertools
 import collections
 import base64
 
+from Crypto.Cipher import AES
+
 # https://en.wikipedia.org/wiki/Letter_frequency
 ENGLISH_FREQUENCIES = {
     'A': 0.08167,
@@ -62,6 +64,16 @@ ENGLISH_FREQUENCIES_WITH_SPACE = {
     'Z': 0.0007836,
     ' ': 0.1918182
 }
+
+def aes_decrypt(key, ciphertext, mode=AES.MODE_ECB, iv=None):
+    kwargs = {
+        "mode": mode
+    }
+    if iv is not None:
+        kwargs["IV"] = iv
+
+    cipher = AES.new(key, **kwargs)
+    return cipher.decrypt(ciphertext)
 
 def chunks(s, n):
     return [s[i:i+n] for i in range(0, len(s), n)]
