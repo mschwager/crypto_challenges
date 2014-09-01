@@ -1,11 +1,63 @@
 #!/usr/bin/env python
 
+import string
 import base64
 import cryptolib
 
 lines = [l.strip() for l in open("6.txt").readlines()]
-s = base64.b64decode("".join(lines))
+ss = base64.b64decode("".join(lines))
 
 if __name__ == "__main__":
-    print s
+
+    # Generalize method suggested in problem to get hamming distance of 1-2
+    # chunks of cipher text to use all chunks
+    sizes = []
+    for keysize in xrange(2, 41):
+        chnks = cryptolib.chunks(ss, keysize)
+
+        # Hamming distance strings must be equal length. The last two chunks
+        # could be of different length, so let's account for that
+        if len(chnks[-1]) != len(chnks[-2]):
+            chnks = chnks[:-1]
+
+        hamming = sum(cryptolib.hamming_distance(chnks[i], chnks[i+1]) for i in
+            xrange(0, len(chnks) - 1, 2))
+
+        # Normalize based on keysize
+        hamming /= float(keysize)
+
+        # Average hamming distances
+        hamming /= len(chnks)
+
+        sizes.append((keysize, float(hamming)))
+
+    sorted_sizes = sorted(sizes, key=lambda x: x[1])
+    top = [i[0] for i in sorted_sizes][0]
+    print "TOP KEYSIZE: {}".format(top)
+
+    ss = ''.join([hex(ord(i))[2:].zfill(2) for i in ss])
+    ss = cryptolib.hex_string_split(ss)
+    characters = string.printable
+
+    # Makes a list of [first byte of every block, second ..., third ..., ...]
+    blocks = cryptolib.divvy(ss, top)
+
+    result = []
+    for block in blocks:
+        s = ''.join(block)
+        analysis = {}
+        for char in characters:
+            decrypted = cryptolib.xor_decrypt_hex_string_with_chr(s, char)
+
+            # Frequency table is in upper case
+            decrypted_upper = [d.upper() for d in decrypted]
+
+            decrypted_frequency = cryptolib.frequency_avg(decrypted_upper)
+            analysis[char] = cryptolib.frequency_analysis(decrypted_frequency,
+                truth=cryptolib.ENGLISH_FREQUENCIES_WITH_SPACE)
+
+        sorted_analysis = sorted(analysis.items(), key=lambda a: a[1])
+        result += sorted_analysis[0][0]
+
+    print ''.join(result)
 

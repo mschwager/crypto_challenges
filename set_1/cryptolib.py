@@ -63,6 +63,12 @@ ENGLISH_FREQUENCIES_WITH_SPACE = {
     ' ': 0.1918182
 }
 
+def chunks(s, n):
+    return [s[i:i+n] for i in range(0, len(s), n)]
+
+def divvy(l, n):
+    return [l[i::n] for i in xrange(n)]
+
 def hamming_distance(s1, s2):
     assert len(s1) == len(s2)
     s1_bin = ''.join(string_to_bin_list(s1))
