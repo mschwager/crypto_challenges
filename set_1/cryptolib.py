@@ -87,6 +87,25 @@ def hamming_distance(s1, s2):
     s2_bin = ''.join(string_to_bin_list(s2))
     return sum(c1 != c2 for c1, c2 in zip(s1_bin, s2_bin))
 
+def chunk_hamming_distance(s, length):
+    chnks = chunks(s, length)
+
+    # Hamming distance strings must be equal length. The last two chunks
+    # could be of different length, so let's account for that
+    if len(chnks[-1]) != len(chnks[-2]):
+        chnks = chnks[:-1]
+
+    hamming = sum(hamming_distance(chnks[i], chnks[i+1]) for i in
+        xrange(0, len(chnks) - 1, 2))
+
+    # Normalize based on length
+    hamming /= float(length)
+
+    # Average hamming distances
+    hamming /= len(chnks)
+
+    return hamming
+
 def string_to_bin_list(s):
     zero_filled_bin = lambda c: bin(ord(c))[2:].zfill(8)
     return [zero_filled_bin(c) for c in s]

@@ -13,21 +13,7 @@ if __name__ == "__main__":
     # chunks of cipher text to use all chunks
     sizes = []
     for keysize in xrange(2, 41):
-        chnks = cryptolib.chunks(ss, keysize)
-
-        # Hamming distance strings must be equal length. The last two chunks
-        # could be of different length, so let's account for that
-        if len(chnks[-1]) != len(chnks[-2]):
-            chnks = chnks[:-1]
-
-        hamming = sum(cryptolib.hamming_distance(chnks[i], chnks[i+1]) for i in
-            xrange(0, len(chnks) - 1, 2))
-
-        # Normalize based on keysize
-        hamming /= float(keysize)
-
-        # Average hamming distances
-        hamming /= len(chnks)
+        hamming = cryptolib.chunk_hamming_distance(ss, keysize)
 
         sizes.append((keysize, float(hamming)))
 
