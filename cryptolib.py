@@ -79,6 +79,40 @@ def aes_decrypt(key, ciphertext, mode=AES.MODE_ECB, iv=None):
     cipher = AES.new(key, **kwargs)
     return cipher.decrypt(ciphertext)
 
+def aes_encrypt(key, plaintext, mode=AES.MODE_ECB, iv=None):
+    kwargs = {
+        "mode": mode
+    }
+    if iv is not None:
+        kwargs["IV"] = iv
+
+    cipher = AES.new(key, **kwargs)
+    return cipher.encrypt(plaintext)
+
+def aes_cbc_encrypt(key, buf, iv=None):
+    assert len(key) == len(iv)
+    xor = lambda l1, l2: ''.join([chr(ord(l1[i]) ^ ord(l2[i])) for i in range(len(l2))])
+    enc = lambda l1, l2, key: aes_encrypt(key, xor(l1, l2))
+
+    chnks = chunks(iv + buf, len(key))
+
+    for i in range(1, len(chnks)):
+        chnks[i] = enc(chnks[i-1], chnks[i], key)
+
+    return ''.join(chnks[1:])
+
+def aes_cbc_decrypt(key, buf, iv=None):
+    assert len(key) == len(iv)
+    xor = lambda l1, l2: ''.join([chr(ord(l1[i]) ^ ord(l2[i])) for i in range(len(l2))])
+    dec = lambda l1, l2, key: xor(aes_decrypt(key, l1), l2)
+
+    chnks = chunks(iv + buf, len(key))
+
+    for i in range(1, len(chnks))[::-1]:
+        chnks[i] = dec(chnks[i], chnks[i-1], key)
+
+    return ''.join(chnks[1:])
+
 def chunks(s, n):
     return [s[i:i+n] for i in range(0, len(s), n)]
 
